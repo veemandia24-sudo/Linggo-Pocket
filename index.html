@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f7d4f"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Lingo Pocket</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1d1d1b;--mut:#6b6a65;--ac:#2f7d4f;--ac2:#e3f1e8;--bd:#e2e0d8;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#141413;--card:#201f1d;--ink:#f1efe8;--mut:#a09e96;--ac:#3f9a65;--ac2:#1f3328;--bd:#33312d;--bad:#c0392b}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#141413;--card:#201f1d;--ink:#f1efe8;--mut:#a09e96;--ac:#3f9a65;--ac2:#1f3328;--bd:#33312d;--bad:#c0392b}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:84px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px}
+h1{font-size:19px;margin:0}
+.seg{display:flex;gap:6px}
+.seg button,.btn{border:1px solid var(--bd);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 14px;font:inherit;cursor:pointer}
+.seg button.on,.btn.pri,.btn.ok{background:var(--ac);border-color:var(--ac);color:#fff}
+.btn.no{background:var(--bad);border-color:var(--bad);color:#fff}
+main{padding:8px 16px;max-width:560px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:22px;text-align:center}
+.big{font-size:44px;line-height:1.2;margin:10px 0;word-break:break-word}
+.mut{color:var(--mut);font-size:14px}
+.row{display:flex;gap:8px;margin-top:14px}.row .btn{flex:1}
+.opt{display:block;width:100%;margin-top:8px;text-align:left}
+.stats{display:flex;gap:8px;margin-bottom:12px}
+.stat{flex:1;background:var(--ac2);border-radius:12px;padding:8px;text-align:center;font-size:13px}
+.stat b{display:block;font-size:18px}
+.stage{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;margin-bottom:8px;padding:14px}
+.stage:disabled{opacity:.5}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:12px 0;font:inherit;font-size:13px;cursor:pointer}
+nav button.on{color:var(--ac);font-weight:600}
+#log{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;min-height:200px}
+.b{max-width:88%;padding:10px 13px;border-radius:16px;white-space:pre-wrap}
+.b.u{align-self:flex-end;background:var(--ac);color:#fff}
+.b.a{align-self:flex-start;background:var(--card);border:1px solid var(--bd)}
+.inp{display:flex;gap:8px}
+.inp input{flex:1;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--ink);font:inherit;min-width:0}
+.score{font-size:40px;font-weight:700;color:var(--ac)}
+#toast{position:fixed;left:16px;right:16px;bottom:76px;background:#222;color:#fff;padding:10px 14px;border-radius:12px;font-size:14px;display:none;z-index:5}
+</style></head>
+<body>
+<header><h1>Lingo Pocket</h1><div class="seg" id="langs"></div></header>
+<main id="app"></main>
+<div id="toast"></div>
+<nav id="nav"></nav>
+<script>
+const P=s=>s.split(';').map(x=>x.split('|'));
+const D={
+ru:{name:'Russian',lang:'ru-RU',rom:'romanization',st:[
+{t:'Alphabet I',w:P('А|a|"ah" as in father;Б|b|"b" as in bat;В|v|"v" as in van;Г|g|"g" as in go;Д|d|"d" as in dog;Е|ye|"ye" as in yes;М|m|"m" as in map;Н|n|"n" as in net')},
+{t:'Greetings',w:P('Привет|privet|Hi;Здравствуйте|zdravstvuyte|Hello (formal);Доброе утро|dobroye utro|Good morning;Добрый вечер|dobryy vecher|Good evening;Спокойной ночи|spokoynoy nochi|Good night;Пока|poka|Bye;До свидания|do svidaniya|Goodbye;Как дела?|kak dela?|How are you?')},
+{t:'Essentials',w:P('Спасибо|spasibo|Thank you;Пожалуйста|pozhaluysta|Please / You’re welcome;Да|da|Yes;Нет|nyet|No;Извините|izvinite|Excuse me / Sorry;Я не понимаю|ya ne ponimayu|I don’t understand;Помогите|pomogite|Help;Хорошо|khorosho|Good / OK')},
+{t:'Food & drink',w:P('Вода|voda|Water;Хлеб|khleb|Bread;Чай|chay|Tea;Кофе|kofe|Coffee;Молоко|moloko|Milk;Суп|sup|Soup;Мясо|myaso|Meat;Яблоко|yabloko|Apple')},
+{t:'Numbers & shopping',w:P('Один|odin|One;Два|dva|Two;Три|tri|Three;Пять|pyat|Five;Десять|desyat|Ten;Сколько стоит?|skolko stoit?|How much is it?;Это|eto|This;Дорого|dorogo|Expensive')},
+{t:'Travel',w:P('Где туалет?|gde tualet?|Where is the toilet?;Вокзал|vokzal|Train station;Гостиница|gostinitsa|Hotel;Аэропорт|aeroport|Airport;Направо|napravo|To the right;Налево|nalevo|To the left;Вы говорите по-английски?|vy govorite po-angliyski?|Do you speak English?;Мне нужна помощь|mne nuzhna pomoshch|I need help')}]},
+ja:{name:'Japanese',lang:'ja-JP',rom:'romaji',st:[
+{t:'Hiragana I',w:P('あ|a|"ah" as in father;い|i|"ee" as in see;う|u|"oo" as in moon;え|e|"eh" as in bed;お|o|"oh" as in so;か|ka|"ka" as in car;き|ki|"key";く|ku|"koo"')},
+{t:'Greetings',w:P('こんにちは|konnichiwa|Hello;おはようございます|ohayou gozaimasu|Good morning;こんばんは|konbanwa|Good evening;おやすみなさい|oyasuminasai|Good night;さようなら|sayounara|Goodbye;またね|mata ne|See you;はじめまして|hajimemashite|Nice to meet you;お元気ですか|ogenki desu ka|How are you?')},
+{t:'Essentials',w:P('ありがとう|arigatou|Thank you;どういたしまして|douitashimashite|You’re welcome;はい|hai|Yes;いいえ|iie|No;すみません|sumimasen|Excuse me / Sorry;わかりません|wakarimasen|I don’t understand;お願いします|onegaishimasu|Please;助けて|tasukete|Help')},
+{t:'Food & drink',w:P('水|mizu|Water;お茶|ocha|Tea;ご飯|gohan|Rice / Meal;パン|pan|Bread;肉|niku|Meat;魚|sakana|Fish;卵|tamago|Egg;りんご|ringo|Apple')},
+{t:'Numbers & shopping',w:P('一|ichi|One;二|ni|Two;三|san|Three;五|go|Five;十|juu|Ten;いくらですか|ikura desu ka|How much is it?;これ|kore|This;高い|takai|Expensive')},
+{t:'Travel',w:P('トイレはどこですか|toire wa doko desu ka|Where is the toilet?;駅|eki|Train station;ホテル|hoteru|Hotel;空港|kuukou|Airport;右|migi|Right;左|hidari|Left;英語を話せますか|eigo o hanasemasu ka|Do you speak English?;手伝ってください|tetsudatte kudasai|Please help me')}]}};
+let L='ru',tab='path',show=false,sp=0,les=null,S={},CH={ru:[],ja:[]},busy=false,tt;
+try{S=JSON.parse(localStorage.getItem('lp2')||'{}')}catch(e){}
+try{const t=localStorage.getItem('lpl');if(t&&D[t])L=t}catch(e){}
+const save=()=>{try{localStorage.setItem('lp2',JSON.stringify(S));localStorage.setItem('lpl',L)}catch(e){}};
+const st=()=>(S[L]=S[L]||{c:{},xp:0,done:[],day:'',streak:0});
+const $=id=>document.getElementById(id);
+const shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+const wd=id=>D[L].st[Math.floor(id/100)].w[id%100];
+const open_=i=>i===0||st().done.includes(i-1);
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4000)}
+function addXp(n){const s=st(),d=new Date().toDateString();s.xp+=n;if(s.day!==d){s.streak=s.day===new Date(Date.now()-864e5).toDateString()?s.streak+1:1;s.day=d}save()}
+function pool(){const o=[];D[L].st.forEach((x,i)=>{if(open_(i))x.w.forEach(w=>o.push(w))});return o}
+function queue(){const s=st(),n=Date.now();return Object.keys(s.c).filter(i=>s.c[i].d<=n).sort((a,b)=>s.c[a].d-s.c[b].d).map(Number)}
+function rate(id,q){const s=st(),c=s.c[id];
+ if(q===0){c.e=Math.max(1.3,c.e-.2);c.i=0;c.d=Date.now()}
+ else{c.i=c.i===0?1:Math.round(c.i*c.e*(q===2?1.3:1));if(q===2)c.e+=.1;c.d=Date.now()+c.i*864e5}
+ addXp(q?10:2);show=false;render()}
+function say(t){
+ if(!('speechSynthesis' in window)){toast('Audio isn’t supported in this browser.');return}
+ let ran=false;const go=()=>{if(ran)return;ran=true;
+  const vs=speechSynthesis.getVoices(),l=D[L].lang,v=vs.find(x=>x.lang.replace('_','-')===l)||vs.find(x=>x.lang.toLowerCase().startsWith(l.slice(0,2)));
+  if(vs.length&&!v)toast('No '+D[L].name+' voice on this device. Install one in your phone’s text-to-speech settings.');
+  const u=new SpeechSynthesisUtterance(t);u.lang=l;if(v)u.voice=v;u.rate=.85;u.onerror=e=>toast('Audio error: '+e.error);
+  speechSynthesis.cancel();setTimeout(()=>speechSynthesis.speak(u),80)};
+ if(speechSynthesis.getVoices().length)go();else{speechSynthesis.onvoiceschanged=go;setTimeout(go,500)}}
+function lev(a,b){const m=[...a],n=[...b],d=Array.from({length:m.length+1},(_,i)=>[i]);
+ for(let j=1;j<=n.length;j++)d[0][j]=j;
+ for(let i=1;i<=m.length;i++)for(let j=1;j<=n.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(m[i-1]===n[j-1]?0:1));
+ return d[m.length][n.length]}
+const norm=s=>s.toLowerCase().replace(/[\s.,!?¿？。、！…-]/g,'');
+function listen(){const out=$('res'),R=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!R){out.textContent='Speech recognition isn’t supported in this browser. Try Chrome or Safari.';return}
+ const p=pool(),target=p[sp%p.length][0],r=new R();r.lang=D[L].lang;r.interimResults=false;out.textContent='Listening…';
+ r.onresult=e=>{const h=e.results[0][0].transcript,a=norm(h),b=norm(target),sc=Math.max(0,Math.round(100*(1-lev(a,b)/Math.max(a.length,b.length,1))));
+  out.innerHTML='<div class="score">'+sc+'%</div><div class="mut">Heard:</div><div style="font-size:22px"></div><div>'+(sc>=85?'Excellent!':sc>=60?'Close. Listen again and retry.':'Keep trying. Listen first, then go slower.')+'</div>';
+  out.children[2].textContent=h;if(sc>=85)addXp(5)};
+ r.onerror=e=>{out.textContent=e.error==='not-allowed'?'Microphone is blocked here. Allow mic access, or use the installed app.':'Mic problem: '+e.error+'. Speech recognition usually needs internet.'};
+ try{r.start()}catch(e){out.textContent='Couldn’t start the microphone.'}}
+async function send(txt){if(busy||!txt)return;const h=CH[L];busy=true;
+ if(txt!=='__start')h.push({role:'user',content:txt});
+ h.push({role:'assistant',content:'…'});draw();
+ try{if(typeof claude==='undefined')throw {message:'AI chat only works in the Claude-hosted version.'};
+  const sample=await claude.use('sample');if(!sample)throw {message:'AI chat isn’t available in this view.'};
+  const d=D[L],ins='You are a friendly '+d.name+' tutor for an English-speaking beginner. Role-play simple everyday situations. Each reply: 1-2 short '+d.name+' sentences with '+d.rom+' in parentheses, then the English translation on a new line. If the learner made a mistake, add a line starting "Fix:" with the corrected sentence and a very short reason. End with a simple question. No markdown.';
+  const msgs=h.slice(0,-1).map(m=>({role:m.role,content:m.content}));
+  const input=[{role:'user',content:ins+'\n\nStart the conversation with a greeting.'},{role:'assistant',content:'Understood.'}].concat(txt==='__start'?[{role:'user',content:'Start now.'}]:msgs);
+  const r=await sample(input,{cache:false,onText:({text})=>{h[h.length-1].content=text;draw()}});
+  h[h.length-1].content=r.text}
+ catch(e){h[h.length-1].content='Sorry, chat failed: '+((e&&e.message)||'unknown error')}
+ busy=false;draw()}
+function draw(){const l=$('log');if(!l)return;l.innerHTML='';
+ CH[L].forEach(m=>{const d=document.createElement('div');d.className='b '+(m.role==='user'?'u':'a');d.textContent=m.content;l.appendChild(d)});window.scrollTo(0,document.body.scrollHeight)}
+function qopts(){const c=D[L].st[les.s].w[les.i],all=[...new Set(shuf(D[L].st.flatMap(x=>x.w)).map(x=>x[2]).filter(x=>x!==c[2]))].slice(0,3);return shuf(all.concat(c[2]))}
+const need=n=>Math.ceil(n*.75),spk=t=>'<button class="btn" data-say="'+t+'">🔊 Listen</button>';
+function lesson(){const g=D[L].st[les.s],w=g.w,c=w[les.i],n=w.length;
+ if(les.step==='learn')return '<div class="card"><div class="mut">'+g.t+' · '+(les.i+1)+'/'+n+'</div><div class="big">'+c[0]+'</div><div class="mut">'+c[1]+'</div><div style="font-size:20px;margin-top:8px">'+c[2]+'</div><div class="row">'+spk(c[0])+'</div></div><div class="row"><button class="btn" id="ex">Exit</button><button class="btn pri" id="nx">'+(les.i+1<n?'Next':'Start quiz')+'</button></div>';
+ if(les.step==='quiz')return '<div class="card"><div class="mut">Quiz '+(les.i+1)+'/'+n+' · What does this mean?</div><div class="big">'+c[0]+'</div><div class="mut">'+c[1]+'</div><div class="row">'+spk(c[0])+'</div></div>'+les.o.map((x,k)=>'<button class="btn opt'+(les.pick===null?'':x===c[2]?' ok':k===les.pick?' no':'')+'" data-o="'+k+'">'+x+'</button>').join('')+(les.pick===null?'':'<div class="row"><button class="btn pri" id="qn">'+(les.i+1<n?'Next':'Finish')+'</button></div>');
+ const pass=les.sc>=need(n);
+ return '<div class="card"><div class="big">'+(pass?'🎉':'💪')+'</div><div class="score">'+les.sc+'/'+n+'</div><p>'+(pass?'Stage complete! Next stage unlocked and words added to Review.':'You need '+need(n)+' correct to pass. Try again!')+'</p></div><div class="row"><button class="btn" id="ex">Back</button>'+(pass?'':'<button class="btn pri" data-s="'+les.s+'">Retry</button>')+'</div>'}
+function path(){const s=st();
+ return '<div class="stats"><div class="stat"><b>🔥 '+s.streak+'</b>day streak</div><div class="stat"><b>'+s.done.length+'/'+D[L].st.length+'</b>stages</div><div class="stat"><b>'+s.xp+'</b>XP</div></div>'+
+ D[L].st.map((g,i)=>'<button class="btn stage" data-s="'+i+'"'+(open_(i)?'':' disabled')+'><span><b>'+(i+1)+'. '+g.t+'</b><br><span class="mut">'+g.w.length+' words</span></span><span>'+(s.done.includes(i)?'✅':open_(i)?'▶':'🔒')+'</span></button>').join('')}
+function render(){
+ $('langs').innerHTML=Object.keys(D).map(k=>'<button class="'+(k===L?'on':'')+'" data-l="'+k+'">'+D[k].name+'</button>').join('');
+ $('nav').innerHTML=[['path','🗺️ Path'],['cards','🃏 Review'],['speak','🎤 Speak'],['chat','💬 Chat']].map(t=>'<button class="'+(tab===t[0]?'on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('');
+ const a=$('app'),s=st();
+ if(tab==='path')a.innerHTML=les?lesson():path();
+ else if(tab==='cards'){const q=queue();
+  let h='<div class="stats"><div class="stat"><b>'+q.length+'</b>due</div><div class="stat"><b>'+Object.keys(s.c).length+'</b>in deck</div><div class="stat"><b>'+s.xp+'</b>XP</div></div>';
+  if(!q.length)h+='<div class="card"><div class="big">'+(Object.keys(s.c).length?'🎉':'🗺️')+'</div><p>'+(Object.keys(s.c).length?'All caught up! Come back later for the next reviews.':'Pass your first stage on the Path tab to add words here.')+'</p></div>';
+  else{const c=wd(q[0]);
+   h+='<div class="card"><div class="big">'+c[0]+'</div>'+(show?'<div class="mut">'+c[1]+'</div><div style="font-size:20px;margin-top:8px">'+c[2]+'</div>':'<div class="mut">Recall the meaning, then reveal</div>')+'<div class="row">'+spk(c[0])+'</div></div>'+
+   (show?'<div class="row"><button class="btn" data-r="0">Again</button><button class="btn pri" data-r="1">Good</button><button class="btn" data-r="2">Easy</button></div>':'<div class="row"><button class="btn pri" id="rev">Show answer</button></div>')}
+  a.innerHTML=h}
+ else if(tab==='speak'){const p=pool(),c=p[sp%p.length];
+  a.innerHTML='<div class="card"><div class="mut">Say this phrase</div><div class="big">'+c[0]+'</div><div class="mut">'+c[1]+' · '+c[2]+'</div><div class="row">'+spk(c[0])+'<button class="btn pri" id="mic">🎤 Speak</button></div><div id="res" style="margin-top:16px"></div></div><div class="row"><button class="btn" id="prv">← Prev</button><button class="btn" id="nxt">Next →</button></div>'}
+ else a.innerHTML='<div id="log"></div>'+(CH[L].length?'<div class="inp"><input id="msg" placeholder="Reply in '+D[L].name+' or English…" autocomplete="off"><button class="btn pri" id="snd">Send</button></div>':'<div class="card"><p>Practice a real conversation with an AI tutor. It corrects your mistakes. Needs internet and the Claude-hosted version.</p><button class="btn pri" id="go">Start chatting</button></div>');
+ if(tab==='chat')draw()}
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+ if(d.l){L=d.l;sp=0;show=false;les=null;save();render()}
+ else if(d.t){tab=d.t;render()}
+ else if(d.say)say(d.say)
+ else if(d.s!==undefined){les={s:+d.s,step:'learn',i:0,sc:0,pick:null,o:[]};render()}
+ else if(d.r)rate(queue()[0],+d.r)
+ else if(d.o!==undefined){if(les.pick!==null)return;les.pick=+d.o;if(les.o[les.pick]===D[L].st[les.s].w[les.i][2])les.sc++;render()}
+ else if(t.id==='nx'){if(les.i+1<D[L].st[les.s].w.length)les.i++;else{les.step='quiz';les.i=0;les.o=qopts()}render()}
+ else if(t.id==='qn'){const g=D[L].st[les.s],n=g.w.length;
+  if(les.i+1<n){les.i++;les.pick=null;les.o=qopts()}
+  else{les.step='result';if(les.sc>=need(n)){const s=st();if(!s.done.includes(les.s))s.done.push(les.s);g.w.forEach((_,k)=>{const id=les.s*100+k;if(!s.c[id])s.c[id]={e:2.5,i:0,d:Date.now()}});addXp(20+les.sc*5)}}
+  render()}
+ else if(t.id==='ex'){les=null;render()}
+ else if(t.id==='rev'){show=true;render()}
+ else if(t.id==='mic')listen()
+ else if(t.id==='prv'){sp=(sp+pool().length-1)%pool().length;render()}
+ else if(t.id==='nxt'){sp=(sp+1)%pool().length;render()}
+ else if(t.id==='go')send('__start').then(render)
+ else if(t.id==='snd'){const i=$('msg'),v=i.value.trim();i.value='';send(v)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='msg'){const v=e.target.value.trim();e.target.value='';send(v)}});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+</script></body></html>
